@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafetería U — Registro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<div class="bg-mesh"></div>
+<div class="page">
+  <div class="auth-layout" style="grid-template-columns:1fr 1.2fr">
+    <div class="auth-visual">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="auth-visual-bg"></div>
+      <div style="position:relative;z-index:1;width:100%">
+        <div class="label" style="color:var(--accent);letter-spacing:0.2em;margin-bottom:32px">☕ Universidad — Cafetería</div>
+        <h1 class="auth-visual-title">Únete,<br>es<br><span class="accent">gratis.</span></h1>
+        <p class="auth-visual-sub" style="margin-top:24px">Crea tu cuenta en segundos y empieza a ordenar desde donde estés en el campus.</p>
+        <div style="margin-top:48px;padding:20px;background:rgba(0,232,176,0.04);border:1px solid rgba(0,232,176,0.1);border-radius:16px">
+          <div class="label" style="margin-bottom:8px;color:var(--accent)">Sin costo</div>
+          <p style="font-size:0.82rem;color:var(--text2);line-height:1.7">Registro completamente gratuito para todos los estudiantes y profesores de la universidad.</p>
+        </div>
+      </div>
+    </div>
+    <div class="auth-panel">
+      <div class="auth-form" style="max-width:440px">
+        <div class="label" style="color:var(--accent);margin-bottom:24px">Crear cuenta nueva</div>
+        <h2 class="auth-form-title">Regístrate</h2>
+        <p class="auth-form-sub">Completa el formulario para empezar a ordenar</p>
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg"></div>
+        <form id="registerForm" autocomplete="on">
+          <div class="form-group">
+            <label class="input-label" for="nombre">Nombre completo</label>
+            <input class="input" id="nombre" type="text" placeholder="Ej. María García" autocomplete="name" required>
+          </div>
+          <div class="form-group">
+            <label class="input-label" for="email">Correo electrónico</label>
+            <input class="input" id="email" type="email" placeholder="tu@universidad.edu" autocomplete="email" required>
+          </div>
+          <div class="form-group">
+            <label class="input-label" for="password">Contraseña</label>
+            <input class="input" id="password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6">
+          </div>
+          <button type="submit" class="btn btn-primary btn-full" id="regBtn">
+            <span id="btnText">Crear cuenta →</span>
+          </button>
+        </form>
+        <div class="form-divider"></div>
+        <p class="auth-link">¿Ya tienes cuenta? <a href="index.html">Inicia sesión</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="js/app.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded',()=>{
+    const dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
+    (function lerp(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(lerp);})();
+    document.querySelectorAll('a,button,.btn').forEach(el=>{
+      el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+      el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+    });
+    document.addEventListener('mousedown',()=>document.body.classList.add('cursor-click'));
+    document.addEventListener('mouseup',()=>document.body.classList.remove('cursor-click'));
+
+    document.getElementById('registerForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      const btn=document.getElementById('regBtn'),err=document.getElementById('errorMsg'),suc=document.getElementById('successMsg');
+      err.classList.remove('show'); suc.classList.remove('show');
+      const nombre=document.getElementById('nombre').value.trim();
+      const email=document.getElementById('email').value.trim();
+      const password=document.getElementById('password').value;
+      btn.disabled=true; document.getElementById('btnText').textContent='Creando cuenta...';
+      try {
+        const res=await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre,email,password})});
+        const data=await res.json();
+        if(!res.ok) throw new Error(data.error||'Error al registrar');
+        suc.textContent='¡Cuenta creada! Redirigiendo al inicio de sesión...'; suc.classList.add('show');
+        setTimeout(()=>window.location.href='index.html',2000);
+      } catch(ex) {
+        err.textContent=ex.message; err.classList.add('show');
+        btn.disabled=false; document.getElementById('btnText').textContent='Crear cuenta →';
+      }
+    });
+  });
+</script>
+</body>
+</html>

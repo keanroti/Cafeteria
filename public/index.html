@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafetería U — Acceso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .pw-toggle{position:absolute;right:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:none;font-size:1rem;padding:4px}
+    .pw-toggle:hover{color:var(--text2)}
+    .input-group{position:relative}
+    .input-group .input{padding-right:44px}
+    @media(max-width:900px){.pw-toggle{cursor:pointer}}
+  </style>
+</head>
+<body>
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<div class="bg-mesh"></div>
+<div class="page">
+  <div class="auth-layout">
+    <div class="auth-visual">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="auth-visual-bg"></div>
+      <div style="position:relative;z-index:1;width:100%">
+        <div class="label" style="color:var(--accent);letter-spacing:0.2em;margin-bottom:32px">☕ Universidad — Cafetería</div>
+        <h1 class="auth-visual-title">Tu pausa<br>del día,<br><span class="accent">ordenada.</span></h1>
+        <p class="auth-visual-sub" style="margin-top:24px">Pide tu comida sin filas. Elige, ordena y recoge cuando esté listo.</p>
+        <div style="margin-top:48px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:12px;font-size:0.82rem;color:var(--text2)"><span style="color:var(--accent)">✦</span> Sin esperar en fila</div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:0.82rem;color:var(--text2)"><span style="color:var(--accent)">✦</span> Seguimiento en tiempo real</div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:0.82rem;color:var(--text2)"><span style="color:var(--accent)">✦</span> Menú siempre actualizado</div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-panel">
+      <div class="auth-form">
+        <div class="label" style="color:var(--accent);margin-bottom:24px">Acceso al sistema</div>
+        <h2 class="auth-form-title">Bienvenido de vuelta</h2>
+        <p class="auth-form-sub">Ingresa tus credenciales para continuar</p>
+        <div class="error-msg" id="errorMsg"></div>
+        <form id="loginForm" autocomplete="on">
+          <div class="form-group">
+            <label class="input-label" for="email">Correo electrónico</label>
+            <input class="input" id="email" type="email" placeholder="tu@universidad.edu" autocomplete="email" required>
+          </div>
+          <div class="form-group">
+            <label class="input-label" for="password">Contraseña</label>
+            <div class="input-group">
+              <input class="input" id="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+              <button type="button" class="pw-toggle" id="togglePw" aria-label="Mostrar/ocultar contraseña">👁</button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+            <span id="btnText">Iniciar sesión →</span>
+          </button>
+        </form>
+        <div class="form-divider"></div>
+        <p class="auth-link">¿No tienes cuenta? <a href="register.html">Regístrate gratis</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="js/app.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded',()=>{
+    // Custom cursor
+    const dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
+    (function lerp(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(lerp);})();
+    document.querySelectorAll('a,button,.btn').forEach(el=>{
+      el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+      el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+    });
+    document.addEventListener('mousedown',()=>document.body.classList.add('cursor-click'));
+    document.addEventListener('mouseup',()=>document.body.classList.remove('cursor-click'));
+
+    // Toggle pw
+    document.getElementById('togglePw').addEventListener('click',()=>{
+      const inp=document.getElementById('password');
+      inp.type=inp.type==='password'?'text':'password';
+    });
+
+    // Check existing session
+    const u=getUser();
+    if(u) window.location.href=u.tipo==='cafeteria'?'admin.html':'menu.html';
+
+    // Login
+    document.getElementById('loginForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      const btn=document.getElementById('loginBtn'),err=document.getElementById('errorMsg');
+      const email=document.getElementById('email').value.trim();
+      const password=document.getElementById('password').value;
+      btn.disabled=true; document.getElementById('btnText').textContent='Verificando...'; err.classList.remove('show');
+      try {
+        const res=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+        const data=await res.json();
+        if(!res.ok) throw new Error(data.error||'Credenciales inválidas');
+        localStorage.setItem('token',data.token);
+        setUser({id:data.id,nombre:data.nombre,email:data.email,tipo:data.tipo});
+        window.location.href=data.tipo==='cafeteria'?'admin.html':'menu.html';
+      } catch(ex) {
+        err.textContent=ex.message; err.classList.add('show');
+        btn.disabled=false; document.getElementById('btnText').textContent='Iniciar sesión →';
+      }
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafetería U — Carrito</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<div class="bg-mesh"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- FLOATING NAV -->
+<nav class="floating-nav" id="floatingNav">
+  <div class="nav-brand"><span class="dot"></span> Cafetería U</div>
+  <span class="nav-user" id="navUser"></span>
+  <div class="nav-actions">
+    <a class="btn btn-ghost btn-sm" href="menu.html">← Menú</a>
+    <a class="btn btn-ghost btn-sm" href="estado.html">📋 Pedidos</a>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="container">
+    <div class="cart-layout">
+      <!-- CART ITEMS -->
+      <div>
+        <div class="page-hero" style="padding:110px 0 32px">
+          <div class="page-hero-label">Tu selección</div>
+          <h1 class="page-hero-title">Carrito de <span style="color:var(--accent)">pedido</span></h1>
+        </div>
+        <div class="cart-panel" id="cartPanel">
+          <div class="panel-header">
+            <span class="panel-title">Productos seleccionados</span>
+            <button class="btn btn-danger btn-sm" id="clearBtn">Vaciar todo</button>
+          </div>
+          <div id="cartList"></div>
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <div class="order-summary" id="summaryPanel">
+        <div class="label" style="margin-bottom:16px;color:var(--accent)">Resumen del pedido</div>
+        <div id="summaryItems"></div>
+        <div class="summary-total">
+          <span class="summary-total-label">Total</span>
+          <span class="summary-total-value" id="totalValue">$0</span>
+        </div>
+        <div id="msgArea"></div>
+        <button class="btn checkout-btn" id="checkoutBtn">
+          <span id="checkoutText">✅ Confirmar pedido</span>
+        </button>
+        <a href="menu.html" class="btn btn-ghost btn-full" style="margin-top:10px;justify-content:center">← Seguir comprando</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="js/app.js" defer></script>
+<script>
+  const EMOJI_MAP_C = {'☕':['café','cafe','latte','capuccino','espresso'],'🥐':['croissant','pan','sandwich','empanada'],'🍱':['almuerzo','sopa','bandeja','arroz'],'🥤':['jugo','bebida','gaseosa','agua','té'],'🍰':['torta','postre','brownie','muffin','galleta'],'🥗':['ensalada','bowl','fruta']};
+  function getEmojiC(n=''){const nl=n.toLowerCase();for(const[e,ks]of Object.entries(EMOJI_MAP_C)){if(ks.some(k=>nl.includes(k)))return e;}return'🍽️';}
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const user = getUser();
+    if(!user){window.location.href='index.html';return;}
+    if(user.tipo==='cafeteria'){window.location.href='admin.html';return;}
+    document.getElementById('navUser').textContent = '👤 '+user.nombre;
+    updateCartBadge();
+    renderCart();
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      clearCart(); renderCart(); showPToast('Carrito vaciado');
+    });
+    document.getElementById('checkoutBtn').addEventListener('click', checkout);
+
+    window.addEventListener('scroll',()=>{
+      document.getElementById('floatingNav').classList.toggle('scrolled',window.scrollY>60);
+    },{passive:true});
+    initCursor();
+  });
+
+  function renderCart() {
+    const cart = getCart();
+    const list = document.getElementById('cartList');
+    const summaryItems = document.getElementById('summaryItems');
+    const total = document.getElementById('totalValue');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+
+    list.innerHTML=''; summaryItems.innerHTML='';
+
+    if(!cart.length) {
+      list.innerHTML=`<div class="cart-empty"><div class="cart-empty-icon">🛒</div><div class="cart-empty-text" style="margin-bottom:16px">Tu carrito está vacío</div><a href="menu.html" class="btn btn-primary btn-sm">Ver el menú →</a></div>`;
+      total.textContent=money(0);
+      checkoutBtn.disabled=true;
+      return;
+    }
+    checkoutBtn.disabled=false;
+
+    cart.forEach((item,i) => {
+      const emoji=getEmojiC(item.nombre);
+      const row=document.createElement('div');
+      row.className='cart-item';
+      row.style.opacity='0';
+      row.innerHTML=`
+        <div class="cart-item-emoji">${emoji}</div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${esc(item.nombre)}</div>
+          <div class="cart-item-price">${money(item.precio)} c/u</div>
+        </div>
+        <div class="qty-control">
+          <button class="qty-btn" data-action="dec" data-id="${item.id}">−</button>
+          <span class="qty-value">${item.cantidad}</span>
+          <button class="qty-btn" data-action="inc" data-id="${item.id}">+</button>
+        </div>
+        <div class="cart-item-total">${money(item.precio*item.cantidad)}</div>
+        <button class="btn btn-danger btn-sm" data-action="rm" data-id="${item.id}" style="padding:6px 10px">✕</button>`;
+      row.querySelectorAll('button[data-action]').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const id=parseInt(btn.dataset.id),act=btn.dataset.action;
+          if(act==='dec') decreaseItem(id);
+          else if(act==='inc') increaseItem(id);
+          else removeItem(id);
+          updateCartBadge(); renderCart();
+        });
+      });
+      list.appendChild(row);
+      gsap.to(row,{opacity:1,x:0,duration:0.35,delay:i*0.06,ease:'power2.out',onStart:()=>{row.style.transform='translateX(-10px)';row.style.opacity='0';}});
+    });
+
+    // Summary
+    cart.forEach(item=>{
+      const r=document.createElement('div');
+      r.className='summary-row';
+      r.innerHTML=`<span>${esc(item.nombre)} × ${item.cantidad}</span><span>${money(item.precio*item.cantidad)}</span>`;
+      summaryItems.appendChild(r);
+    });
+    total.textContent=money(cartTotal());
+  }
+
+  async function checkout() {
+    const user=getUser(), cart=getCart();
+    const btn=document.getElementById('checkoutBtn');
+    const msg=document.getElementById('msgArea');
+    if(!cart.length) return;
+    btn.disabled=true; document.getElementById('checkoutText').textContent='Enviando pedido...';
+    msg.innerHTML='';
+    try {
+      const items=cart.map(i=>({producto_id:i.id,cantidad:i.cantidad,precio_unitario:i.precio}));
+      const res=await authFetch('/pedido-completo',{method:'POST',body:JSON.stringify({usuario_id:user.id,total:cartTotal(),items})});
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.error||'Error al procesar pedido');
+      clearCart(); updateCartBadge();
+      showPToast('¡Pedido enviado con éxito! 🎉');
+      setTimeout(()=>window.location.href='estado.html',1200);
+    } catch(e) {
+      msg.innerHTML=`<div style="color:#FF8080;font-size:0.82rem;margin-top:12px">${e.message}</div>`;
+      btn.disabled=false; document.getElementById('checkoutText').textContent='✅ Confirmar pedido';
+    }
+  }
+
+  function showPToast(msg){
+    const c=document.getElementById('toastContainer');
+    const t=document.createElement('div');
+    t.className='toast-item'; t.textContent=msg; c.appendChild(t);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+    setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},2800);
+  }
+
+  function initCursor(){
+    const dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
+    (function l(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(l);})();
+    document.querySelectorAll('a,button,.btn').forEach(el=>{
+      el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+      el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+    });
+    document.addEventListener('mousedown',()=>document.body.classList.add('cursor-click'));
+    document.addEventListener('mouseup',()=>document.body.classList.remove('cursor-click'));
+  }
+</script>
+</body>
+</html>

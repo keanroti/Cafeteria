@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafetería U — Menú</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .search-bar-wrapper {
+      max-width: 480px;
+      position: relative;
+    }
+    .product-count-badge {
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:0.75rem;color:var(--text3);
+      background:var(--surface);border:1px solid var(--border);
+      padding:4px 12px;border-radius:100px;
+    }
+    .product-count-badge span{color:var(--accent);font-weight:700}
+    .ticker {
+      border-top:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+      padding:12px 0;overflow:hidden;
+      margin-bottom:48px;
+    }
+    .ticker-inner {
+      display:flex;gap:48px;width:max-content;
+      animation:ticker-scroll 20s linear infinite;
+      font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;
+      color:var(--text3);font-weight:600;
+    }
+    .ticker-inner .sep { color:var(--accent); }
+    @keyframes ticker-scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    .main-content { padding-bottom: 80px; }
+    /* Magnetic button effect via JS */
+    .add-btn { will-change: transform; }
+  </style>
+</head>
+<body>
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<div class="bg-mesh"></div>
+
+<!-- PAGE LOADER -->
+<div class="page-loader" id="pageLoader">
+  <div class="loader-logo">☕ Cafetería U</div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- FLOATING NAV -->
+<nav class="floating-nav" id="floatingNav">
+  <div class="nav-brand">
+    <span class="dot"></span> Cafetería U
+  </div>
+  <span class="nav-user" id="navUser"></span>
+  <div class="nav-actions">
+    <a class="btn btn-ghost btn-sm btn-cart" href="carrito.html" id="cartBtn">
+      🛒 Carrito
+      <span class="cart-count" id="cartBadge">0</span>
+    </a>
+    <a class="btn btn-ghost btn-sm" href="estado.html">📋 Pedidos</a>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="container main-content">
+    <!-- HERO -->
+    <div class="page-hero" id="hero">
+      <div class="page-hero-label" id="heroLabel">Menú del día</div>
+      <h1 class="page-hero-title" id="heroTitle">
+        ¿Qué vas<br>a <span style="color:var(--accent)">ordenar</span>?
+      </h1>
+      <p class="page-hero-sub" id="heroSub">Selecciona los productos y añádelos a tu carrito</p>
+    </div>
+
+    <!-- TICKER -->
+    <div class="ticker">
+      <div class="ticker-inner" id="tickerInner">
+        <span>Cafetería universitaria</span><span class="sep">✦</span>
+        <span>Menú fresco diario</span><span class="sep">✦</span>
+        <span>Pedidos en tiempo real</span><span class="sep">✦</span>
+        <span>Retiro express</span><span class="sep">✦</span>
+        <span>Cafetería universitaria</span><span class="sep">✦</span>
+        <span>Menú fresco diario</span><span class="sep">✦</span>
+        <span>Pedidos en tiempo real</span><span class="sep">✦</span>
+        <span>Retiro express</span><span class="sep">✦</span>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+      <div class="categories" id="categoriesBar">
+        <button class="cat-btn active" data-cat="all">Todos</button>
+      </div>
+      <div class="search-bar-wrapper">
+        <span class="search-icon">🔍</span>
+        <input class="input search-input" id="search" type="search" placeholder="Buscar producto...">
+      </div>
+    </div>
+
+    <!-- SECTION HEADER -->
+    <div class="section-header">
+      <h2 class="section-title">Disponible <span>ahora</span></h2>
+      <div class="product-count-badge"><span id="productCount">0</span> productos</div>
+    </div>
+
+    <!-- PRODUCT GRID -->
+    <div class="products-bento" id="productGrid"></div>
+
+    <!-- EMPTY STATE -->
+    <div id="emptyState" style="display:none">
+      <div class="empty-state">
+        <div class="icon">🔍</div>
+        <p>No se encontraron productos.<br><a href="#" onclick="clearSearch()">Ver todo el menú</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT EMOJI MAP -->
+<script>
+  const EMOJI_MAP = {
+    
+    '🥐':['croissant','pan','tostada','wrap','pita','arepa','empanada','baguette'],
+    '🍱':['almuerzo','sopa','bandeja','plato','arroz','pasta','menú del día','corriente'],
+    '🥤':['jugo','bebida','gaseosa','agua','té','limonada','malteada','fresco','smoothie'],
+    '🍰':['torta','postre','pastel','brownie','muffin','galleta','helado','dulce','flan'],
+    '🥗':['ensalada','cesar','bowl','saludable','vegano','vegetariano','fruta'],
+    '🍕':['pizza','calzone'],
+    '🌮':['tacos','burrito','quesadilla','nachos'],
+    '🍔':['hamburguesa','burger','perro','hot dog'],
+    '🥪':['sandwich','sub','panino'],
+    '☕':['café','cafe','latte','capuccino','espresso','americano','moka','cortado'],
+    '🥛':['leche','batido','smoothie','malteada','yogurt'],
+    '🧁':['cupcake','muffin','pastelito','brownie','galleta'],
+    '🍩':['donut','rosquilla','berlinés'],
+    '🍟':['papas','fritas','chips'],
+  };
+  function getEmoji(nombre='') {
+    const n = nombre.toLowerCase();
+    for(const [em,kws] of Object.entries(EMOJI_MAP)) {
+      if(kws.some(k=>n.includes(k))) return em;
+    }
+    const defaults=['🍽️','🥙','🫔','🧆','🫕','🥘','🍲','🥞','🧇','🫖','☕','🥪','🥛'];
+    let hash=0; for(let c of nombre) hash=((hash<<5)-hash)+c.charCodeAt(0);
+    return defaults[Math.abs(hash)%defaults.length];
+  }
+ function getCategoryLabel(nombre = '') {
+  const n = nombre.toLowerCase();
+
+  
+  if (['café','cafe','espresso','latte','capuccino','cortado','americano','moka'].some(k => n.includes(k))) return 'Bebidas calientes';
+
+  if (['jugo','gaseosa','agua','limonada','fresco','malteada','smoothie','té','te'].some(k => n.includes(k))) return 'Bebidas frías';
+
+  if (['leche','yogurt','yogur','kumis','batido'].some(k => n.includes(k))) return 'Lácteos';
+
+  if (['almuerzo','sopa','arroz','pasta','bandeja','plato','menú del día','corriente'].some(k => n.includes(k))) return 'Almuerzos';
+  
+  if (['pizza','calzone','hamburguesa','burger','perro','hot dog','papas','fritas','chips'].some(k => n.includes(k))) return 'Comida rápida';
+ 
+  if (['tacos','burrito','quesadilla','nachos'].some(k => n.includes(k))) return 'Comida mexicana';
+  
+  if (['sandwich','sub','panino'].some(k => n.includes(k))) return 'Sandwiches';
+
+  if (['torta','postre','pastel','brownie','muffin','galleta','helado','dulce','flan'].some(k => n.includes(k))) return 'Postres';
+
+  if (['cupcake','muffin','pastelito','brownie','galleta','donut','rosquilla','berlinés'].some(k => n.includes(k))) return 'Repostería';
+
+
+  if (['ensalada','cesar','bowl','saludable','vegano','vegetariano','fruta'].some(k => n.includes(k))) return 'Saludable';
+ 
+  if (['pan','croissant','wrap','pita','arepa','empanada','baguette','tostada'].some(k => n.includes(k))) return 'Panadería';
+
+  return 'Otros';
+}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="js/app.js" defer></script>
+<script>
+let allProducts = [];
+let currentCat = 'all';
+let searchTerm = '';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Auth guard
+  const user = getUser();
+  if (!user) { window.location.href = 'index.html'; return; }
+  if (user.tipo === 'cafeteria') { window.location.href = 'admin.html'; return; }
+  document.getElementById('navUser').textContent = '👤 ' + user.nombre;
+
+  updateCartBadge();
+
+  // Hide loader
+  setTimeout(() => {
+    document.getElementById('pageLoader').classList.add('hidden');
+    initAnimations();
+  }, 900);
+
+  // Load products
+  await loadProducts();
+
+  // Search
+  document.getElementById('search').addEventListener('input', e => {
+    searchTerm = e.target.value.toLowerCase();
+    filterAndRender();
+  });
+
+  // Scroll nav effect
+  window.addEventListener('scroll', () => {
+    document.getElementById('floatingNav').classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+
+  // Custom cursor
+  initCursor();
+});
+
+function initAnimations() {
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.fromTo('#heroLabel', { opacity:0, y:20 }, { opacity:1, y:0, duration:0.6, ease:'power3.out' });
+  gsap.fromTo('#heroTitle', { opacity:0, y:40 }, { opacity:1, y:0, duration:0.8, delay:0.15, ease:'power3.out' });
+  gsap.fromTo('#heroSub',   { opacity:0, y:20 }, { opacity:1, y:0, duration:0.6, delay:0.3, ease:'power3.out' });
+}
+
+async function loadProducts() {
+  try {
+    const res = await fetch('/productos');
+    allProducts = await res.json();
+    buildCategories();
+    filterAndRender();
+  } catch(e) {
+    showPremiumToast('Error cargando el menú', true);
+  }
+}
+
+function buildCategories() {
+  const cats = new Set(['all']);
+  allProducts.forEach(p => cats.add(getCategoryLabel(p.nombre)));
+  const bar = document.getElementById('categoriesBar');
+  bar.innerHTML = '';
+  cats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (cat === 'all' ? ' active' : '');
+    btn.dataset.cat = cat;
+    btn.textContent = cat === 'all' ? 'Todos' : cat;
+    btn.addEventListener('click', () => {
+      currentCat = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterAndRender();
+    });
+    bar.appendChild(btn);
+  });
+}
+
+function filterAndRender() {
+  let list = allProducts;
+  if (currentCat !== 'all') list = list.filter(p => getCategoryLabel(p.nombre) === currentCat);
+  if (searchTerm) list = list.filter(p => p.nombre.toLowerCase().includes(searchTerm) || (p.descripcion||'').toLowerCase().includes(searchTerm));
+  document.getElementById('productCount').textContent = list.length;
+  renderProducts(list);
+}
+
+function renderProducts(list) {
+  const grid = document.getElementById('productGrid');
+  const empty = document.getElementById('emptyState');
+  grid.innerHTML = '';
+  if (!list.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  list.forEach((p, i) => {
+    const inStock = p.stock > 0;
+    const emoji = getEmoji(p.nombre);
+    const cat = getCategoryLabel(p.nombre);
+
+    const card = document.createElement('div');
+    card.className = 'product-card' + (!inStock ? ' out-of-stock' : '');
+    card.innerHTML = `
+      <div class="product-visual">
+        <div class="product-visual-inner" style="font-size:${isBig(i)?'4rem':'3rem'}">${emoji}</div>
+      </div>
+      <div class="product-card-inner">
+        <div class="product-category-tag">${cat}</div>
+        <div class="product-name">${esc(p.nombre)}</div>
+        <div class="product-price">${money(p.precio)}</div>
+        <div class="product-stock">
+          <div class="product-stock-dot ${p.stock <= 5 && p.stock > 0 ? 'low':''}"></div>
+          ${inStock ? (p.stock <= 5 ? `¡Solo ${p.stock} restantes!` : `${p.stock} disponibles`) : 'Sin stock'}
+        </div>
+        <button class="add-btn" data-id="${p.id}" ${!inStock?'disabled':''}>
+          <span>+ Agregar al carrito</span>
+        </button>
+      </div>`;
+
+    // Add to cart handler
+    card.querySelector('.add-btn').addEventListener('click', function() {
+      addToCart(p);
+      this.classList.add('added');
+      this.querySelector('span').textContent = '✓ Agregado';
+      setTimeout(() => {
+        this.classList.remove('added');
+        this.querySelector('span').textContent = '+ Agregar al carrito';
+      }, 1400);
+      updateCartBadge();
+      showPremiumToast(`<strong>${esc(p.nombre)}</strong> añadido al carrito`);
+      // Animate cart badge
+      const badge = document.getElementById('cartBadge');
+      badge.style.transform = 'scale(1.5)';
+      setTimeout(() => badge.style.transform = 'scale(1)', 200);
+    });
+
+    // Mouse parallax
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.querySelector('.product-visual-inner').style.transform = `translate(${x*10}px, ${y*10}px) scale(1.05)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.querySelector('.product-visual-inner').style.transform = '';
+    });
+
+    // Magnetic add button
+    const addBtn = card.querySelector('.add-btn');
+    addBtn.addEventListener('mousemove', e => {
+      const rect = addBtn.getBoundingClientRect();
+      const x = (e.clientX - rect.left - rect.width/2) * 0.25;
+      const y = (e.clientY - rect.top - rect.height/2) * 0.25;
+      addBtn.style.transform = `translate(${x}px,${y}px) scale(1.02)`;
+    });
+    addBtn.addEventListener('mouseleave', () => {
+      addBtn.style.transform = '';
+    });
+
+    grid.appendChild(card);
+
+    // Stagger reveal with GSAP
+    gsap.to(card, {
+      opacity: 1, y: 0, duration: 0.5,
+      delay: i * 0.07,
+      ease: 'power2.out',
+      onStart: () => card.classList.add('revealed')
+    });
+  });
+}
+
+function isBig(i) {
+  const pos = (i%6)+1;
+  return pos===1||pos===2;
+}
+
+function clearSearch() {
+  document.getElementById('search').value = '';
+  searchTerm = '';
+  filterAndRender();
+}
+
+// Premium toast
+function showPremiumToast(msg, isError=false) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast-item';
+  if(isError) toast.style.borderLeftColor = 'var(--accent2)';
+  toast.innerHTML = msg;
+  container.appendChild(toast);
+  requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 2800);
+}
+
+// Override app.js showToast
+window.showToast = showPremiumToast;
+
+function initCursor() {
+  const dot = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    dot.style.left = mx+'px'; dot.style.top = my+'px';
+  });
+  (function lerp(){
+    rx += (mx-rx)*0.12; ry += (my-ry)*0.12;
+    ring.style.left = rx+'px'; ring.style.top = ry+'px';
+    requestAnimationFrame(lerp);
+  })();
+  document.querySelectorAll('a,button,.btn,.add-btn,.cat-btn').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+  });
+  document.addEventListener('mousedown', () => document.body.classList.add('cursor-click'));
+  document.addEventListener('mouseup', () => document.body.classList.remove('cursor-click'));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafetería U — Admin Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+   
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin-top: 32px; }
+    .admin-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 24px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; transition: var(--transition); opacity: 0; transform: translateY(20px); }
+    .admin-card:hover { border-color: rgba(124,92,252,0.3); box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 40px rgba(124,92,252,0.1); transform: translateY(-4px); }
+    .admin-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--border2); transition: var(--transition); }
+    
+    
+    .admin-card[data-estado="pendiente"]::before { background: #FFC850; box-shadow: 0 0 15px rgba(255,200,80,0.4); }
+    .admin-card[data-estado="preparando"]::before { background: #A58FFE; box-shadow: 0 0 15px rgba(165,143,254,0.4); }
+    .admin-card[data-estado="listo"]::before { background: var(--accent); box-shadow: 0 0 15px var(--glow); }
+    
+    .admin-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .admin-id { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; }
+    .admin-user { font-size: 0.85rem; color: var(--text2); letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600; }
+    
+    .admin-items { background: var(--surface); border-radius: 12px; padding: 16px; font-size: 0.85rem; color: var(--text); border: 1px solid var(--border2); }
+    .admin-item-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .admin-item-row:last-child { margin-bottom: 0; }
+    
+    .admin-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+    .action-select { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 8px; font-family: var(--font-body); font-size: 0.8rem; outline: none; cursor: none; }
+    .action-select:focus { border-color: var(--accent3); }
+    
+   
+    .tab-content { 
+      display: none !important; 
+    }
+    .tab-content.active { 
+      display: block !important; 
+    }
+    
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 32px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+    .modal-header { font-size: 1.5rem; font-weight: 800; margin-bottom: 24px; color: var(--accent3); }
+    .form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .form-group label { font-size: 0.85rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+    .form-group input, .form-group select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 8px; font-family: var(--font-body); outline: none; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent3); }
+    .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+    .producto-card { position: relative; }
+    .producto-card::after { content: attr(data-disponible); position: absolute; top: 12px; right: 12px; background: var(--accent3); color: #000; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+    .producto-card[data-disponible="no"]::after { background: var(--accent2); }
+  </style>
+</head>
+<body>
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<div class="bg-mesh"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<nav class="floating-nav" id="floatingNav">
+  <div class="nav-brand"><span class="dot" style="background:var(--accent3)"></span> Admin Terminal</div>
+  <span class="nav-user" id="navUser"></span>
+  <div class="nav-actions">
+    <button class="btn btn-ghost btn-sm refresh-btn" id="refreshBtn">↻ Sincronizar</button>
+    <button class="btn btn-danger btn-sm" onclick="logout()">Cerrar Sesión</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="container" style="padding-top: 120px; padding-bottom: 80px;">
+    
+    <div class="section-header" style="border-bottom: 1px solid var(--border); padding-bottom: 24px;">
+      <div>
+        <div class="label" style="color:var(--accent3)">Centro de Comando</div>
+        <h1 class="section-title">Gestión de <span style="color:var(--accent3)">Comandas</span></h1>
+      </div>
+      <div style="text-align: right;">
+        <div class="label">Ingresos del Día</div>
+        <div class="section-title" id="dailyTotal" style="font-size: 2rem;">$0</div>
+      </div>
+    </div>
+
+    <div class="categories" style="margin-bottom: 24px;">
+      <button class="cat-btn active" data-tab="pedidos-activos">Órdenes Activas</button>
+      <button class="cat-btn" data-tab="pedidos-historial">Historial</button>
+      <button class="cat-btn" data-tab="productos">Productos</button>
+      <button class="cat-btn" data-tab="graficos">Gráficos</button>
+    </div>
+
+    
+    <div id="tab-pedidos-activos" class="tab-content active">
+      <div class="admin-grid" id="pedidosGrid"></div>
+    </div>
+
+    
+    <div id="tab-pedidos-historial" class="tab-content">
+      <div class="admin-grid" id="historialGrid"></div>
+    </div>
+
+    
+    <div id="tab-productos" class="tab-content">
+      <div style="margin-bottom: 24px;">
+        <button class="btn btn-primary" onclick="openProductoModal()">➕ Nuevo Producto</button>
+      </div>
+      <div class="admin-grid" id="productosGrid"></div>
+    </div>
+
+    
+    <div id="tab-graficos" class="tab-content">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 24px; display: flex; flex-direction: column;">
+          <h3 style="margin-bottom: 16px; color: var(--accent3);">Ventas por Día</h3>
+          <div style="flex: 1; position: relative; min-height: 300px;">
+            <canvas id="chartVentas"></canvas>
+          </div>
+        </div>
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 24px; display: flex; flex-direction: column;">
+          <h3 style="margin-bottom: 16px; color: var(--accent3);">Productos en Stock</h3>
+          <div style="flex: 1; position: relative; min-height: 300px;">
+            <canvas id="chartProductos"></canvas>
+          </div>
+        </div>
+      </div>
+      <div style="background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 24px; margin-top: 24px;">
+        <h3 style="margin-bottom: 16px; color: var(--accent3);">Resumen de Ventas</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div style="background: var(--surface); padding: 16px; border-radius: 8px; border-left: 4px solid var(--accent3);">
+            <div style="color: var(--text2); font-size: 0.85rem;">Órdenes Completadas</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--accent3);" id="statsOrdenesCompletas">0</div>
+          </div>
+          <div style="background: var(--surface); padding: 16px; border-radius: 8px; border-left: 4px solid #A58FFE;">
+            <div style="color: var(--text2); font-size: 0.85rem;">Ingresos Totales</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #A58FFE;" id="statsIngresoTot">$0</div>
+          </div>
+          <div style="background: var(--surface); padding: 16px; border-radius: 8px; border-left: 4px solid #FFC850;">
+            <div style="color: var(--text2); font-size: 0.85rem;">Ticket Promedio</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #FFC850;" id="statsTicketProm">$0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="js/app.js" defer></script>
+<script src="js/admin.js" defer></script>
+
+
+<div id="productoModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header" id="modalTitle">Nuevo Producto</div>
+    <div class="form-group">
+      <label>Nombre</label>
+      <input type="text" id="prodNombre" placeholder="Nombre del producto">
+    </div>
+    <div class="form-group">
+      <label>Precio</label>
+      <input type="number" id="prodPrecio" placeholder="0.00" step="0.01">
+    </div>
+    <div class="form-group">
+      <label>Stock</label>
+      <input type="number" id="prodStock" placeholder="0" min="0">
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="checkbox" id="prodDisponible" checked> Disponible en el menú
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeProductoModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProducto()">Guardar</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

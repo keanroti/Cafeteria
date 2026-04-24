@@ -1,7 +1,7 @@
 #  Cafetería U - Sistema de Pedidos Universitario
 
 ## Descripción General
-Sistema de pedidos anticipados para la cafetería de la Universidad de Concepción (PGC Facultad de Ingeniería). 
+Sistema de pedidos anticipados para la cafetería de la Universidad de Cundinamarca (PGC Facultad de Ingeniería). 
 Permite a estudiantes hacer pedidos sin esperar en fila, con seguimiento en tiempo real y menú actualizable.
 
 ---

@@ -744,7 +744,7 @@ En el proyecto:
 
 ---
 
-**Última actualización**: 2024  
+**Última actualización**: 2026  
 **Versión**: 1.0  
 **Términos**: 100+
 

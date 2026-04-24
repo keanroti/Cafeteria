@@ -336,4 +336,4 @@ npm install helmet compression
 
 ---
 
-Última actualización: 2024 | Versión: 1.0.0
+Última actualización: 2026 | Versión: 1.0.0

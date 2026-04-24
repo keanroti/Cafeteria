@@ -6,7 +6,7 @@
 
 ##  ¿Qué Hace Este Proyecto?
 
-Sistema completo de pedidos en línea para la cafetería universitaria PGC (Sede Concepción, Universidad de Concepción).
+Sistema completo de pedidos en línea para la cafetería universitaria PGC (extension de facatativa, Universidad de cundinamarca).
 
 **Problema que resuelve**: Evitar que estudiantes hagan filas largas esperando su comida. Pueden pedir con anticipación y retirar cuando esté listo.
 

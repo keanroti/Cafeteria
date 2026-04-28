@@ -11,15 +11,15 @@ Documento con todos los diagramas UML del proyecto. Puedes exportarlos como imá
 
 ```mermaid
 graph TB
-    U["👤 USUARIO"]
-    A["👨‍💼 ADMINISTRADOR"]
+    U["USUARIO"]
+    A["ADMINISTRADOR"]
     
-    subgraph Autenticación["🔐 Autenticación"]
+    subgraph Autenticación["Autenticación"]
         UC1["Registrarse"]
         UC2["Iniciar Sesión"]
     end
     
-    subgraph Compra["🛒 Gestión de Compras"]
+    subgraph Compra["Gestión de Compras"]
         UC3["Ver Menú"]
         UC4["Buscar Productos"]
         UC5["Agregar al Carrito"]
@@ -28,12 +28,12 @@ graph TB
         UC8["Hacer Pedido"]
     end
     
-    subgraph Seguimiento["📋 Seguimiento de Pedidos"]
+    subgraph Seguimiento["Seguimiento de Pedidos"]
         UC9["Ver Estado Pedido"]
         UC10["Ver Historial Pedidos"]
     end
     
-    subgraph Admin["⚙️ Administración"]
+    subgraph Admin["Administración"]
         UC11["Gestionar Productos"]
         UC12["Ver Pedidos Activos"]
         UC13["Actualizar Estado Pedido"]
@@ -183,34 +183,34 @@ classDiagram
 
 ```mermaid
 flowchart TD
-    A["🔐 Usuario Autenticado?"] --> B{¿Autenticado?}
-    B -->|No| C["❌ Redirigir a Login"]
-    B -->|Sí| D["✅ Ver Menú de Productos"]
+    A["Usuario Autenticado?"] --> B{¿Autenticado?}
+    B -->|No| C["Redirigir a Login"]
+    B -->|Sí| D["Ver Menú de Productos"]
     
     C --> Z["Fin"]
     
-    D --> E["🛒 Agregar Productos al Carrito"]
+    D --> E["Agregar Productos al Carrito"]
     E --> F{¿Carrito Vacío?}
     
-    F -->|Sí| G["❌ Mostrar Error"]
+    F -->|Sí| G["Mostrar Error"]
     G --> Z
     
-    F -->|No| H["✅ Proceder a Checkout"]
-    H --> I["📤 Enviar Datos del Pedido"]
-    I --> J["🔧 Crear Registro en BD"]
+    F -->|No| H["Proceder a Checkout"]
+    H --> I["Enviar Datos del Pedido"]
+    I --> J["Crear Registro en BD"]
     J --> K{¿Pedido Creado?}
     
-    K -->|No| L["❌ Mostrar Error"]
+    K -->|No| L["Mostrar Error"]
     L --> Z
     
-    K -->|Sí| M["📝 Guardar Detalles de Items"]
+    K -->|Sí| M["Guardar Detalles de Items"]
     M --> N{¿Todos Items<br/>Guardados?}
     
-    N -->|No| O["⚠️ Advertencia"]
-    O --> P["🧹 Limpiar Carrito"]
+    N -->|No| O["Advertencia"]
+    O --> P["Limpiar Carrito"]
     
     N -->|Sí| P
-    P --> Q["📋 Redirigir a Estado Pedido"]
+    P --> Q["Redirigir a Estado Pedido"]
     Q --> Z
     
     style A fill:#e1f5ff
@@ -230,31 +230,31 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["👨‍💼 Admin Autenticado?"] --> B{¿Es Admin?}
-    B -->|No| C["❌ Acceso Denegado"]
-    B -->|Sí| D["✅ Cargar Lista Pedidos"]
+    A["Admin Autenticado?"] --> B{¿Es Admin?}
+    B -->|No| C["Acceso Denegado"]
+    B -->|Sí| D["Cargar Lista Pedidos"]
     
     C --> Z["Fin"]
     
-    D --> E["📋 Seleccionar Pedido"]
-    E --> F["🔍 Abrir Detalles"]
-    F --> G["📝 Seleccionar Nuevo Estado"]
+    D --> E["Seleccionar Pedido"]
+    E --> F["Abrir Detalles"]
+    F --> G["Seleccionar Nuevo Estado"]
     G --> H["<b>Estados Disponibles</b><br/>pendiente → preparando → listo → entregado"]
     H --> I{¿Estado Válido?}
     
-    I -->|No| J["❌ Error: Estado Inválido"]
+    I -->|No| J["Error: Estado Inválido"]
     J --> Z
     
-    I -->|Sí| K["🔄 Actualizar en BD"]
+    I -->|Sí| K["Actualizar en BD"]
     K --> L{¿Cambio Exitoso?}
     
-    L -->|No| M["❌ Mostrar Error"]
+    L -->|No| M["Mostrar Error"]
     M --> Z
     
-    L -->|Sí| N["✅ Refrescar Lista"]
-    N --> O["📡 Emitir WebSocket"]
-    O --> P["🔔 Notificar Cliente"]
-    P --> Q["🎉 Estado Actualizado"]
+    L -->|Sí| N["Refrescar Lista"]
+    N --> O["Emitir WebSocket"]
+    O --> P["Notificar Cliente"]
+    P --> Q["Estado Actualizado"]
     Q --> Z
     
     style A fill:#e3f2fd
@@ -322,27 +322,27 @@ sequenceDiagram
 
 ```mermaid
 graph TB
-    subgraph Cliente["🖥️ CLIENTE - Frontend"]
+    subgraph Cliente["CLIENTE - Frontend"]
         HTML["HTML Pages<br/>index.html | menu.html<br/>carrito.html | estado.html<br/>admin.html | register.html"]
-        CSS["🎨 Styles.css<br/>Diseño Moderno<br/>CSS Grid & Flexbox"]
-        JS["⚙️ JavaScript<br/>app.js | auth.js | menu.js<br/>carrito.js | estado.js | admin.js"]
-        Storage["💾 LocalStorage<br/>Usuario | Carrito<br/>Token | Preferencias"]
+        CSS["Styles.css<br/>Diseño Moderno<br/>CSS Grid & Flexbox"]
+        JS["JavaScript<br/>app.js | auth.js | menu.js<br/>carrito.js | estado.js | admin.js"]
+        Storage["LocalStorage<br/>Usuario | Carrito<br/>Token | Preferencias"]
     end
     
-    subgraph Servidor["🔧 SERVIDOR - Backend"]
-        Express["📱 Express.js<br/>Node.js Runtime"]
-        Routes["🛣️ Rutas API<br/>/auth | /productos<br/>/pedidos | /admin<br/>/reportes"]
-        Auth["🔐 Middleware JWT<br/>Autenticación<br/>Autorización Admin"]
-        Logic["📊 Lógica Negocio<br/>Pedidos | Productos<br/>Reportes | Validaciones"]
+    subgraph Servidor["SERVIDOR - Backend"]
+        Express["Express.js<br/>Node.js Runtime"]
+        Routes["Rutas API<br/>/auth | /productos<br/>/pedidos | /admin<br/>/reportes"]
+        Auth["Middleware JWT<br/>Autenticación<br/>Autorización Admin"]
+        Logic["Lógica Negocio<br/>Pedidos | Productos<br/>Reportes | Validaciones"]
     end
     
-    subgraph BD["💾 BASE DE DATOS"]
-        MySQL["🗄️ MySQL 8.0<br/>usuarios | productos<br/>pedidos | detalles_pedido"]
+    subgraph BD["BASE DE DATOS"]
+        MySQL["MySQL 8.0<br/>usuarios | productos<br/>pedidos | detalles_pedido"]
     end
     
-    subgraph Tiempo["⚡ TIEMPO REAL"]
-        Socket["🔌 Socket.IO<br/>WebSocket Connection"]
-        Events["📢 Eventos<br/>nuevo_pedido<br/>estado_actualizado"]
+    subgraph Tiempo["TIEMPO REAL"]
+        Socket["Socket.IO<br/>WebSocket Connection"]
+        Events["Eventos<br/>nuevo_pedido<br/>estado_actualizado"]
     end
     
     Cliente -->|HTTPS/REST| Servidor
@@ -370,22 +370,22 @@ graph TB
 stateDiagram-v2
     [*] --> Pendiente
     
-    Pendiente: 📋 Pendiente\n(Pedido recibido)
+    Pendiente: Pendiente\n(Pedido recibido)
     Pendiente --> Preparando: Admin inicia\npreparación
     
-    Preparando: 👨‍🍳 Preparando\n(En cocina)
+    Preparando: Preparando\n(En cocina)
     Preparando --> Listo: Pedido listo
     
-    Listo: ✅ Listo\n(Listo para recoger)
+    Listo: Listo\n(Listo para recoger)
     Listo --> Entregado: Cliente recoge
     
-    Entregado: 🎉 Entregado\n(Completado)
+    Entregado: Entregado\n(Completado)
     Entregado --> [*]
     
     Preparando --> Cancelado: Admin cancela
     Pendiente --> Cancelado: Usuario cancela
     
-    Cancelado: ❌ Cancelado\n(No procesado)
+    Cancelado: Cancelado\n(No procesado)
     Cancelado --> [*]
     
     note right of Pendiente
@@ -476,32 +476,32 @@ erDiagram
 
 ```mermaid
 flowchart LR
-    A["🖥️ Cliente<br/>Frontend"] -->|1. Credenciales| B["🔐 Endpoint<br/>/login"]
-    B -->|2. Validar| C["🔍 Buscar en BD<br/>usuarios"]
+    A["Cliente<br/>Frontend"] -->|1. Credenciales| B["Endpoint<br/>/login"]
+    B -->|2. Validar| C["Buscar en BD<br/>usuarios"]
     C -->|3. Comparar<br/>bcrypt| D{¿Contraseña<br/>Válida?}
     
-    D -->|No| E["❌ Error<br/>401 Unauthorized"]
+    D -->|No| E["Error<br/>401 Unauthorized"]
     E -->|Rechazar| A
     
-    D -->|Sí| F["✅ Generar JWT<br/>with payload"]
-    F -->|include: id,tipo| G["🎫 Token JWT<br/>firmado"]
-    G -->|4. Enviar token| H["💾 LocalStorage<br/>cliente"]
+    D -->|Sí| F["Generar JWT<br/>with payload"]
+    F -->|include: id,tipo| G["Token JWT<br/>firmado"]
+    G -->|4. Enviar token| H["LocalStorage<br/>cliente"]
     
     H -->|5. En cada request| I["Authorization:<br/>Bearer TOKEN"]
-    I -->|6. Middleware| J["🔐 Verificar JWT<br/>authenticateToken"]
+    I -->|6. Middleware| J["Verificar JWT<br/>authenticateToken"]
     J -->|7. Validar firma| K{¿Token<br/>Válido?}
     
-    K -->|No/Expirado| L["❌ 403 Forbidden"]
+    K -->|No/Expirado| L["403 Forbidden"]
     L -->|Rechazar| A
     
-    K -->|Sí| M["✅ Extraer payload<br/>req.user = decoded"]
+    K -->|Sí| M["Extraer payload<br/>req.user = decoded"]
     M -->|8. Verificar rol| N{¿Es Admin?}
-    N -->|No| O["❌ 403<br/>No tiene permisos"]
+    N -->|No| O["403<br/>No tiene permisos"]
     O -->|Rechazar| A
     
-    N -->|Sí| P["✅ Acceso a rutas<br/>protegidas"]
-    P -->|9. Ejecutar| Q["⚙️ Lógica del Negocio"]
-    Q -->|10. Respuesta| R["✅ 200 OK<br/>+ Datos"]
+    N -->|Sí| P["Acceso a rutas<br/>protegidas"]
+    P -->|9. Ejecutar| Q["Lógica del Negocio"]
+    Q -->|10. Respuesta| R["200 OK<br/>+ Datos"]
     R -->|Éxito| A
     
     style A fill:#e8f5e9

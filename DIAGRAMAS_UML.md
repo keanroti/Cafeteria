@@ -65,12 +65,12 @@ graph TB
     UC14 -->|extiende| UC12
     UC15 -->|extiende| UC12
     
-    style U fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px
-    style A fill:#e3f2fd,stroke:#1565c0,stroke-width:3px
-    style Autenticación fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    style Compra fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
-    style Seguimiento fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-    style Admin fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    style U fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    style A fill:#2196F3,stroke:#0D47A1,stroke-width:3px,color:#fff
+    style Autenticación fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Compra fill:#9C27B0,stroke:#4A148C,stroke-width:2px,color:#fff
+    style Seguimiento fill:#F44336,stroke:#B71C1C,stroke-width:2px,color:#fff
+    style Admin fill:#009688,stroke:#004D40,stroke-width:2px,color:#fff
 ```
 
 ---
@@ -213,15 +213,15 @@ flowchart TD
     P --> Q["Redirigir a Estado Pedido"]
     Q --> Z
     
-    style A fill:#e1f5ff
-    style D fill:#c8e6c9
-    style H fill:#c8e6c9
-    style P fill:#c8e6c9
-    style Q fill:#c8e6c9
-    style C fill:#ffcdd2
-    style G fill:#ffcdd2
-    style L fill:#ffcdd2
-    style O fill:#fff9c4
+    style A fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style D fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style H fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style P fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style Q fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style C fill:#FFCDD2,stroke:#C62828,stroke-width:2px
+    style G fill:#FFCDD2,stroke:#C62828,stroke-width:2px
+    style L fill:#FFCDD2,stroke:#C62828,stroke-width:2px
+    style O fill:#FFF59D,stroke:#F57F17,stroke-width:2px
 ```
 
 ---
@@ -257,16 +257,16 @@ flowchart TD
     P --> Q["Estado Actualizado"]
     Q --> Z
     
-    style A fill:#e3f2fd
-    style D fill:#c8e6c9
-    style K fill:#c8e6c9
-    style N fill:#c8e6c9
-    style O fill:#b3e5fc
-    style P fill:#b3e5fc
-    style Q fill:#c8e6c9
-    style C fill:#ffcdd2
-    style J fill:#ffcdd2
-    style M fill:#ffcdd2
+    style A fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style D fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style K fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style N fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style O fill:#81D4FA,stroke:#01579B,stroke-width:2px
+    style P fill:#81D4FA,stroke:#01579B,stroke-width:2px
+    style Q fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style C fill:#FFCDD2,stroke:#C62828,stroke-width:2px
+    style J fill:#FFCDD2,stroke:#C62828,stroke-width:2px
+    style M fill:#FFCDD2,stroke:#C62828,stroke-width:2px
 ```
 
 ---
@@ -356,10 +356,10 @@ graph TB
     Routes -->|Ejecuta| Logic
     Logic -->|Accede| MySQL
     
-    style Cliente fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    style Servidor fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    style BD fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    style Tiempo fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    style Cliente fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    style Servidor fill:#2196F3,stroke:#0D47A1,stroke-width:3px,color:#fff
+    style BD fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+    style Tiempo fill:#9C27B0,stroke:#4A148C,stroke-width:3px,color:#fff
 ```
 
 ---
@@ -504,15 +504,15 @@ flowchart LR
     Q -->|10. Respuesta| R["200 OK<br/>+ Datos"]
     R -->|Éxito| A
     
-    style A fill:#e8f5e9
-    style B fill:#fff3e0
-    style J fill:#fff3e0
-    style F fill:#c8e6c9
-    style H fill:#b3e5fc
-    style P fill:#c8e6c9
-    style E fill:#ffcdd2
-    style L fill:#ffcdd2
-    style O fill:#ffcdd2
+    style A fill:#4CAF50,stroke:#1B5E20,stroke-width:2px,color:#fff
+    style B fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style J fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style F fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style H fill:#81D4FA,stroke:#01579B,stroke-width:2px
+    style P fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style E fill:#FFCDD2,stroke:#C62828,stroke-width:2px
+    style L fill:#FFCDD2,stroke:#C62828,stroke-width:2px
+    style O fill:#FFCDD2,stroke:#C62828,stroke-width:2px
 ```
 
 ---
